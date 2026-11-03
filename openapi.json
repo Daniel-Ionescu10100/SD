@@ -1,0 +1,1106 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Energy Management System API",
+    "description": "Distributed Systems (Assignment 1) REST API specification for User, Device, and Authentication microservices routed through Nginx reverse proxy / API gateway.",
+    "version": "1.0.0",
+    "contact": {
+      "name": "UTCN Distributed Systems Team"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://localhost",
+      "description": "Nginx API Gateway (HTTPS)"
+    },
+    {
+      "url": "http://localhost",
+      "description": "Nginx API Gateway (HTTP)"
+    }
+  ],
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Enter JWT Bearer token obtained from POST /auth/login"
+      }
+    },
+    "schemas": {
+      "LoginRequestDTO": {
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "properties": {
+          "username": {
+            "type": "string",
+            "example": "admin"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "example": "admin123"
+          }
+        }
+      },
+      "LoginResponseDTO": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string",
+            "description": "Cryptographically signed JWT Bearer token",
+            "example": "eyJhbGciOiJIUzI1NiJ9..."
+          },
+          "username": {
+            "type": "string",
+            "example": "admin"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "CLIENT"
+            ],
+            "example": "ADMIN"
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "example": "11111111-1111-1111-1111-111111111111"
+          }
+        }
+      },
+      "RegisterRequestDTO": {
+        "type": "object",
+        "required": [
+          "username",
+          "password",
+          "role"
+        ],
+        "properties": {
+          "username": {
+            "type": "string",
+            "example": "client2"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "example": "secret123"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "CLIENT"
+            ],
+            "example": "CLIENT"
+          }
+        }
+      },
+      "UserDTO": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "22222222-2222-2222-2222-222222222222"
+          },
+          "name": {
+            "type": "string",
+            "example": "John Doe"
+          },
+          "username": {
+            "type": "string",
+            "example": "client1"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "CLIENT"
+            ],
+            "example": "CLIENT"
+          }
+        }
+      },
+      "UserDetailsDTO": {
+        "type": "object",
+        "required": [
+          "name",
+          "username",
+          "password",
+          "role"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "example": "22222222-2222-2222-2222-222222222222"
+          },
+          "name": {
+            "type": "string",
+            "example": "John Doe"
+          },
+          "username": {
+            "type": "string",
+            "example": "client1"
+          },
+          "password": {
+            "type": "string",
+            "format": "password",
+            "example": "client123"
+          },
+          "role": {
+            "type": "string",
+            "enum": [
+              "ADMIN",
+              "CLIENT"
+            ],
+            "example": "CLIENT"
+          }
+        }
+      },
+      "DeviceDTO": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "33333333-3333-3333-3333-333333333331"
+          },
+          "name": {
+            "type": "string",
+            "example": "Smart Meter Living Room"
+          },
+          "description": {
+            "type": "string",
+            "example": "Monitors HVAC and lighting in main living area"
+          },
+          "maxConsumption": {
+            "type": "number",
+            "format": "double",
+            "example": 450.5
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "example": "22222222-2222-2222-2222-222222222222"
+          }
+        }
+      },
+      "DeviceDetailsDTO": {
+        "type": "object",
+        "required": [
+          "name",
+          "maxConsumption"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "example": "33333333-3333-3333-3333-333333333331"
+          },
+          "name": {
+            "type": "string",
+            "example": "Smart Meter Kitchen"
+          },
+          "description": {
+            "type": "string",
+            "example": "Monitors heavy appliances and oven"
+          },
+          "maxConsumption": {
+            "type": "number",
+            "format": "double",
+            "example": 720.0
+          },
+          "userId": {
+            "type": "string",
+            "format": "uuid",
+            "nullable": true,
+            "example": "22222222-2222-2222-2222-222222222222"
+          }
+        }
+      },
+      "PersonDTO": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "username"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "example": "22222222-2222-2222-2222-222222222222"
+          },
+          "name": {
+            "type": "string",
+            "example": "John Doe"
+          },
+          "username": {
+            "type": "string",
+            "example": "client1"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "timestamp": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "resource": {
+            "type": "string"
+          },
+          "status": {
+            "type": "integer",
+            "example": 400
+          },
+          "error": {
+            "type": "string",
+            "example": "Bad Request"
+          },
+          "message": {
+            "type": "string",
+            "example": "Entity validation failed"
+          },
+          "details": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/auth/login": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "User login authentication",
+        "description": "Validates credentials against BCrypt password hashes in auth_db and issues a cryptographically signed JWT token with role and userId claims.",
+        "operationId": "login",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "": "#/components/schemas/LoginRequestDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Login successful - returns JWT token and metadata",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "": "#/components/schemas/LoginResponseDTO"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid input / blank credentials",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Bad credentials (invalid username or password)"
+          }
+        }
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Direct credential registration",
+        "description": "Creates a new login credential with BCrypt password hashing in auth_db.",
+        "operationId": "registerAuth",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "": "#/components/schemas/RegisterRequestDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Credential created - returns UUID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Username already exists",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/validate": {
+      "get": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Token validation sub-request",
+        "description": "Endpoint invoked by Nginx auth_request directive. Validates JWT signature and expiration, emitting claims in response headers.",
+        "operationId": "validateToken",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Token valid. Headers emitted: X-User-Id, X-Username, X-Role.",
+            "headers": {
+              "X-User-Id": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                "description": "User UUID"
+              },
+              "X-Username": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "Username"
+              },
+              "X-Role": {
+                "schema": {
+                  "type": "string"
+                },
+                "description": "User role (ADMIN/CLIENT)"
+              }
+            }
+          },
+          "401": {
+            "description": "Missing, expired, or invalid token"
+          }
+        }
+      }
+    },
+    "/auth/user/{username}": {
+      "delete": {
+        "tags": [
+          "Authentication"
+        ],
+        "summary": "Delete user credential",
+        "description": "Internal synchronization endpoint to de-provision credentials when a user is deleted.",
+        "operationId": "deleteCredential",
+        "parameters": [
+          {
+            "name": "username",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Credential deleted successfully"
+          }
+        }
+      }
+    },
+    "/user": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "List all users",
+        "description": "Returns collection of all users in user_db. Restricted to ADMIN role.",
+        "operationId": "getAllUsers",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of users",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "": "#/components/schemas/UserDTO"
+                  }
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized (invalid token)"
+          },
+          "403": {
+            "description": "Forbidden (requires ADMIN role)"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Create new user",
+        "description": "Inserts user into user_db, syncs identity to auth-service, and syncs shadow person to device-service under strong consistency transactional guarantee.",
+        "operationId": "createUser",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "": "#/components/schemas/UserDetailsDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "User created - returns UUID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden (requires ADMIN role)"
+          },
+          "409": {
+            "description": "Username duplicate"
+          }
+        }
+      }
+    },
+    "/user/{id}": {
+      "get": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Get user by UUID",
+        "description": "Retrieves user profile. ADMIN can access any user; CLIENT can only access their own user profile matching X-User-Id.",
+        "operationId": "getUserById",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "User profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "": "#/components/schemas/UserDTO"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - CLIENT attempted to view another user profile"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Update user",
+        "description": "Updates user attributes and syncs name and username changes to shadow person in device-service. Restricted to ADMIN role.",
+        "operationId": "updateUser",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "": "#/components/schemas/UserDetailsDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "User updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "": "#/components/schemas/UserDTO"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden (requires ADMIN role)"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Users"
+        ],
+        "summary": "Delete user",
+        "description": "Deletes user with strong consistency: unassigns and removes shadow person in device-service, de-provisions credentials in auth-service, and deletes user record.",
+        "operationId": "deleteUser",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "User deleted successfully"
+          },
+          "403": {
+            "description": "Forbidden (requires ADMIN role)"
+          },
+          "404": {
+            "description": "User not found"
+          }
+        }
+      }
+    },
+    "/device": {
+      "get": {
+        "tags": [
+          "Devices"
+        ],
+        "summary": "List all devices",
+        "description": "Returns complete catalog of smart metering devices and their user associations. Restricted to ADMIN role.",
+        "operationId": "getAllDevices",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of devices",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "": "#/components/schemas/DeviceDTO"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden (requires ADMIN role)"
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Devices"
+        ],
+        "summary": "Create new device",
+        "description": "Creates a new smart meter device entity and links it to person foreign key if userId is provided. Restricted to ADMIN role.",
+        "operationId": "createDevice",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "": "#/components/schemas/DeviceDetailsDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Device created - returns UUID",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Validation failure",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden (requires ADMIN role)"
+          },
+          "404": {
+            "description": "Assigned userId does not exist in person shadow table"
+          }
+        }
+      }
+    },
+    "/device/{id}": {
+      "get": {
+        "tags": [
+          "Devices"
+        ],
+        "summary": "Get device by UUID",
+        "description": "Retrieves specific device details. Restricted to ADMIN role.",
+        "operationId": "getDeviceById",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Device details",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "": "#/components/schemas/DeviceDTO"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden (requires ADMIN role)"
+          },
+          "404": {
+            "description": "Device not found"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "Devices"
+        ],
+        "summary": "Update device",
+        "description": "Updates device metadata, maximum energy consumption value, or assigned user. Restricted to ADMIN role.",
+        "operationId": "updateDevice",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "": "#/components/schemas/DeviceDetailsDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Device updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "": "#/components/schemas/DeviceDTO"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden (requires ADMIN role)"
+          },
+          "404": {
+            "description": "Device not found"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Devices"
+        ],
+        "summary": "Delete device",
+        "description": "Removes smart meter device from inventory. Restricted to ADMIN role.",
+        "operationId": "deleteDevice",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Device deleted successfully"
+          },
+          "403": {
+            "description": "Forbidden (requires ADMIN role)"
+          },
+          "404": {
+            "description": "Device not found"
+          }
+        }
+      }
+    },
+    "/device/user/{userId}": {
+      "get": {
+        "tags": [
+          "Devices"
+        ],
+        "summary": "Get devices assigned to user",
+        "description": "Retrieves all smart meters linked to a given user. ADMIN can query any user; CLIENT can only query their own userId.",
+        "operationId": "getDevicesByUser",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "List of user devices",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "": "#/components/schemas/DeviceDTO"
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden - CLIENT attempted to view another user devices"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Devices"
+        ],
+        "summary": "Unassign all devices for user",
+        "description": "Internal/Admin endpoint that dissociates all devices mapped to a given user by setting foreign key to NULL.",
+        "operationId": "unassignUserDevices",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Devices unassigned successfully"
+          }
+        }
+      }
+    },
+    "/device/{deviceId}/assign/{userId}": {
+      "patch": {
+        "tags": [
+          "Devices"
+        ],
+        "summary": "Assign device to user",
+        "description": "Associates a smart meter device with a client user by updating the person foreign key. Restricted to ADMIN role.",
+        "operationId": "assignDeviceToUser",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "deviceId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "userId",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Device successfully assigned",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "": "#/components/schemas/DeviceDTO"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden (requires ADMIN role)"
+          },
+          "404": {
+            "description": "Device or Person not found"
+          }
+        }
+      }
+    },
+    "/person": {
+      "post": {
+        "tags": [
+          "Person Shadow Sync (Internal)"
+        ],
+        "summary": "Insert shadow person",
+        "description": "Internal service-to-service endpoint called by user-service to replicate user ID into device_db.",
+        "operationId": "createShadowPerson",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "": "#/components/schemas/PersonDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Shadow person created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "format": "uuid"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/person/{id}": {
+      "put": {
+        "tags": [
+          "Person Shadow Sync (Internal)"
+        ],
+        "summary": "Update shadow person",
+        "description": "Internal service-to-service endpoint called by user-service on user profile update.",
+        "operationId": "updateShadowPerson",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "": "#/components/schemas/PersonDTO"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Shadow person updated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "": "#/components/schemas/PersonDTO"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Person not found"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Person Shadow Sync (Internal)"
+        ],
+        "summary": "Delete shadow person and unassign devices",
+        "description": "Internal service-to-service endpoint called by user-service when a user is deleted.",
+        "operationId": "deleteShadowPerson",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Shadow person and device links removed"
+          },
+          "404": {
+            "description": "Person not found"
+          }
+        }
+      }
+    }
+  }
+}

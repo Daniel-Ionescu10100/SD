@@ -1,0 +1,217 @@
+services:
+  # ─── Original spring-demo ─────────────────────────────────────────────────────
+  mysql-db:
+    image: mysql:8.4
+    container_name: mysql-db
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DB_NAME}
+      MYSQL_USER: ${DB_USER}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql-data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "127.0.0.1" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
+    networks:
+      - demo_net
+
+  spring-demo:
+    build:
+      context: ./spring-demo-java25
+      dockerfile: Dockerfile
+    container_name: spring-demo
+    restart: unless-stopped
+    ports:
+      - "8084:8080"
+    environment:
+      DB_HOST: mysql-db
+      DB_PORT: 3306
+      DB_NAME: ${DB_NAME}
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+    depends_on:
+      mysql-db:
+        condition: service_healthy
+    networks:
+      - demo_net
+
+  # ─── User Microservice ────────────────────────────────────────────────────────
+  mysql-user:
+    image: mysql:8.4
+    container_name: mysql-user
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${USER_DB_NAME}
+      MYSQL_USER: ${USER_DB_USER}
+      MYSQL_PASSWORD: ${USER_DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${USER_DB_ROOT_PASSWORD}
+    ports:
+      - "3308:3306"
+    volumes:
+      - mysql-user-data:/var/lib/mysql
+      - ./db-init/init-user.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "127.0.0.1" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
+    networks:
+      - demo_net
+
+  user-service:
+    build:
+      context: ./user-service
+      dockerfile: Dockerfile
+    container_name: user-service
+    restart: unless-stopped
+    ports:
+      - "8081:8080"
+    environment:
+      USER_DB_HOST: mysql-user
+      USER_DB_PORT: 3306
+      USER_DB_NAME: ${USER_DB_NAME}
+      USER_DB_USER: ${USER_DB_USER}
+      USER_DB_PASSWORD: ${USER_DB_PASSWORD}
+      DEVICE_SERVICE_URL: http://device-service:8080
+      AUTH_SERVICE_URL: http://auth-service:8080
+    depends_on:
+      mysql-user:
+        condition: service_healthy
+    networks:
+      - demo_net
+
+  # ─── Device Microservice ──────────────────────────────────────────────────────
+  mysql-device:
+    image: mysql:8.4
+    container_name: mysql-device
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${DEVICE_DB_NAME}
+      MYSQL_USER: ${DEVICE_DB_USER}
+      MYSQL_PASSWORD: ${DEVICE_DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${DEVICE_DB_ROOT_PASSWORD}
+    ports:
+      - "3309:3306"
+    volumes:
+      - mysql-device-data:/var/lib/mysql
+      - ./db-init/init-device.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "127.0.0.1" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
+    networks:
+      - demo_net
+
+  device-service:
+    build:
+      context: ./device-service
+      dockerfile: Dockerfile
+    container_name: device-service
+    restart: unless-stopped
+    ports:
+      - "8082:8080"
+    environment:
+      DEVICE_DB_HOST: mysql-device
+      DEVICE_DB_PORT: 3306
+      DEVICE_DB_NAME: ${DEVICE_DB_NAME}
+      DEVICE_DB_USER: ${DEVICE_DB_USER}
+      DEVICE_DB_PASSWORD: ${DEVICE_DB_PASSWORD}
+    depends_on:
+      mysql-device:
+        condition: service_healthy
+    networks:
+      - demo_net
+
+  # ─── Auth Microservice ────────────────────────────────────────────────────────
+  mysql-auth:
+    image: mysql:8.4
+    container_name: mysql-auth
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${AUTH_DB_NAME}
+      MYSQL_USER: ${AUTH_DB_USER}
+      MYSQL_PASSWORD: ${AUTH_DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${AUTH_DB_ROOT_PASSWORD}
+    ports:
+      - "3310:3306"
+    volumes:
+      - mysql-auth-data:/var/lib/mysql
+      - ./db-init/init-auth.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "127.0.0.1" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
+    networks:
+      - demo_net
+
+  auth-service:
+    build:
+      context: ./auth-service
+      dockerfile: Dockerfile
+    container_name: auth-service
+    restart: unless-stopped
+    ports:
+      - "8083:8080"
+    environment:
+      AUTH_DB_HOST: mysql-auth
+      AUTH_DB_PORT: 3306
+      AUTH_DB_NAME: ${AUTH_DB_NAME}
+      AUTH_DB_USER: ${AUTH_DB_USER}
+      AUTH_DB_PASSWORD: ${AUTH_DB_PASSWORD}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+    depends_on:
+      mysql-auth:
+        condition: service_healthy
+    networks:
+      - demo_net
+
+  # ─── React Frontend ───────────────────────────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    restart: unless-stopped
+    networks:
+      - demo_net
+
+  # ─── Reverse Proxy / API Gateway (Nginx with HTTPS) ──────────────────────────
+  nginx:
+    build:
+      context: ./nginx
+      dockerfile: Dockerfile
+    container_name: nginx-proxy
+    restart: unless-stopped
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - auth-service
+      - user-service
+      - device-service
+      - frontend
+    networks:
+      - demo_net
+
+volumes:
+  mysql-data:
+  mysql-user-data:
+  mysql-device-data:
+  mysql-auth-data:
+
+networks:
+  demo_net:
+    name: demo_net
