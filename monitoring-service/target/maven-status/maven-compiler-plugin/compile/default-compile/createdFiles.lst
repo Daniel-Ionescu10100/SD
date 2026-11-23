@@ -1,0 +1,16 @@
+ro\tuc\ds2020\dtos\MeasurementDTO.class
+ro\tuc\ds2020\MonitoringServiceApplication.class
+ro\tuc\ds2020\repositories\MonitoredDeviceRepository.class
+ro\tuc\ds2020\services\ConsumptionService.class
+ro\tuc\ds2020\dtos\DeviceSyncEvent.class
+ro\tuc\ds2020\entities\HourlyConsumption.class
+ro\tuc\ds2020\entities\MonitoredDevice.class
+ro\tuc\ds2020\messaging\MeasurementListener.class
+ro\tuc\ds2020\messaging\DeviceSyncListener.class
+ro\tuc\ds2020\services\DeviceSyncService.class
+ro\tuc\ds2020\config\RabbitConfig.class
+ro\tuc\ds2020\dtos\HourlyConsumptionDTO.class
+ro\tuc\ds2020\security\RoleInterceptor.class
+ro\tuc\ds2020\security\WebMvcConfig.class
+ro\tuc\ds2020\controllers\MonitoringController.class
+ro\tuc\ds2020\repositories\HourlyConsumptionRepository.class

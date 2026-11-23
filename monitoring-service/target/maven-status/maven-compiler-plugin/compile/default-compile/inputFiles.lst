@@ -1,0 +1,16 @@
+C:\Users\Daniel\Desktop\UTCN\An4\Sem1\SD\Project2\monitoring-service\src\main\java\ro\tuc\ds2020\config\RabbitConfig.java
+C:\Users\Daniel\Desktop\UTCN\An4\Sem1\SD\Project2\monitoring-service\src\main\java\ro\tuc\ds2020\controllers\MonitoringController.java
+C:\Users\Daniel\Desktop\UTCN\An4\Sem1\SD\Project2\monitoring-service\src\main\java\ro\tuc\ds2020\dtos\DeviceSyncEvent.java
+C:\Users\Daniel\Desktop\UTCN\An4\Sem1\SD\Project2\monitoring-service\src\main\java\ro\tuc\ds2020\dtos\HourlyConsumptionDTO.java
+C:\Users\Daniel\Desktop\UTCN\An4\Sem1\SD\Project2\monitoring-service\src\main\java\ro\tuc\ds2020\dtos\MeasurementDTO.java
+C:\Users\Daniel\Desktop\UTCN\An4\Sem1\SD\Project2\monitoring-service\src\main\java\ro\tuc\ds2020\entities\HourlyConsumption.java
+C:\Users\Daniel\Desktop\UTCN\An4\Sem1\SD\Project2\monitoring-service\src\main\java\ro\tuc\ds2020\entities\MonitoredDevice.java
+C:\Users\Daniel\Desktop\UTCN\An4\Sem1\SD\Project2\monitoring-service\src\main\java\ro\tuc\ds2020\messaging\DeviceSyncListener.java
+C:\Users\Daniel\Desktop\UTCN\An4\Sem1\SD\Project2\monitoring-service\src\main\java\ro\tuc\ds2020\messaging\MeasurementListener.java
+C:\Users\Daniel\Desktop\UTCN\An4\Sem1\SD\Project2\monitoring-service\src\main\java\ro\tuc\ds2020\MonitoringServiceApplication.java
+C:\Users\Daniel\Desktop\UTCN\An4\Sem1\SD\Project2\monitoring-service\src\main\java\ro\tuc\ds2020\repositories\HourlyConsumptionRepository.java
+C:\Users\Daniel\Desktop\UTCN\An4\Sem1\SD\Project2\monitoring-service\src\main\java\ro\tuc\ds2020\repositories\MonitoredDeviceRepository.java
+C:\Users\Daniel\Desktop\UTCN\An4\Sem1\SD\Project2\monitoring-service\src\main\java\ro\tuc\ds2020\security\RoleInterceptor.java
+C:\Users\Daniel\Desktop\UTCN\An4\Sem1\SD\Project2\monitoring-service\src\main\java\ro\tuc\ds2020\security\WebMvcConfig.java
+C:\Users\Daniel\Desktop\UTCN\An4\Sem1\SD\Project2\monitoring-service\src\main\java\ro\tuc\ds2020\services\ConsumptionService.java
+C:\Users\Daniel\Desktop\UTCN\An4\Sem1\SD\Project2\monitoring-service\src\main\java\ro\tuc\ds2020\services\DeviceSyncService.java
