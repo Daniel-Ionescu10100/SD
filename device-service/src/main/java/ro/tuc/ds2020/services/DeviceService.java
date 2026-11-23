@@ -10,6 +10,7 @@ import ro.tuc.ds2020.dtos.DeviceDetailsDTO;
 import ro.tuc.ds2020.dtos.builders.DeviceBuilder;
 import ro.tuc.ds2020.entities.Device;
 import ro.tuc.ds2020.entities.Person;
+import ro.tuc.ds2020.messaging.DeviceEventPublisher;
 import ro.tuc.ds2020.repositories.DeviceRepository;
 import ro.tuc.ds2020.repositories.PersonRepository;
 
@@ -25,11 +26,15 @@ public class DeviceService {
 
     private final DeviceRepository deviceRepository;
     private final PersonRepository personRepository;
+    private final DeviceEventPublisher eventPublisher;
 
     @Autowired
-    public DeviceService(DeviceRepository deviceRepository, PersonRepository personRepository) {
+    public DeviceService(DeviceRepository deviceRepository,
+                         PersonRepository personRepository,
+                         DeviceEventPublisher eventPublisher) {
         this.deviceRepository = deviceRepository;
         this.personRepository = personRepository;
+        this.eventPublisher = eventPublisher;
     }
 
     public List<DeviceDTO> findDevices() {
@@ -61,6 +66,7 @@ public class DeviceService {
         Device device = DeviceBuilder.toEntity(dto, person);
         device = deviceRepository.save(device);
         LOGGER.debug("Device with id {} was inserted in db", device.getId());
+        eventPublisher.publishCreated(device);
         return device.getId();
     }
 
@@ -77,6 +83,7 @@ public class DeviceService {
         device.setPerson(resolvePerson(dto.getUserId()));
         device = deviceRepository.save(device);
         LOGGER.debug("Device with id {} was updated in db", device.getId());
+        eventPublisher.publishUpdated(device);
         return DeviceBuilder.toDeviceDTO(device);
     }
 
@@ -87,6 +94,7 @@ public class DeviceService {
         }
         deviceRepository.deleteById(id);
         LOGGER.debug("Device with id {} was deleted from db", id);
+        eventPublisher.publishDeleted(id);
     }
 
     public DeviceDTO assignToUser(UUID deviceId, UUID userId) {
@@ -102,6 +110,7 @@ public class DeviceService {
         device.setPerson(person);
         device = deviceRepository.save(device);
         LOGGER.debug("Device {} assigned to person {}", deviceId, userId);
+        eventPublisher.publishUpdated(device);
         return DeviceBuilder.toDeviceDTO(device);
     }
 
@@ -112,6 +121,7 @@ public class DeviceService {
             device.setPerson(null);
         }
         deviceRepository.saveAll(devices);
+        devices.forEach(eventPublisher::publishUpdated);
         LOGGER.info("Unassigned {} devices from person {}", devices.size(), userId);
     }
 

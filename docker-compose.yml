@@ -80,10 +80,14 @@ services:
       USER_DB_NAME: ${USER_DB_NAME}
       USER_DB_USER: ${USER_DB_USER}
       USER_DB_PASSWORD: ${USER_DB_PASSWORD}
-      DEVICE_SERVICE_URL: http://device-service:8080
-      AUTH_SERVICE_URL: http://auth-service:8080
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
     depends_on:
       mysql-user:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
     networks:
       - demo_net
@@ -126,8 +130,14 @@ services:
       DEVICE_DB_NAME: ${DEVICE_DB_NAME}
       DEVICE_DB_USER: ${DEVICE_DB_USER}
       DEVICE_DB_PASSWORD: ${DEVICE_DB_PASSWORD}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
     depends_on:
       mysql-device:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
     networks:
       - demo_net
@@ -172,8 +182,87 @@ services:
       AUTH_DB_PASSWORD: ${AUTH_DB_PASSWORD}
       JWT_SECRET: ${JWT_SECRET}
       JWT_EXPIRATION_MS: ${JWT_EXPIRATION_MS:-86400000}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
     depends_on:
       mysql-auth:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    networks:
+      - demo_net
+
+  # Message Broker (Sync & data collection)
+  rabbitmq:
+    image: rabbitmq:4.1-management
+    container_name: rabbitmq
+    hostname: rabbitmq
+    restart: unless-stopped
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    ports:
+      - "5672:5672"     #AMQP
+      - "15672:15672"   #Management UI
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+    healthcheck:
+        test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
+        interval: 10s
+        timeout: 5s
+        retries: 10
+        start_period: 20s
+    networks:
+        - demo_net
+
+  # ─── Monitoring Microservice ──────────────────────────────────────────────────
+  mysql-monitoring:
+    image: mysql:8.4
+    container_name: mysql-monitoring
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: ${MONITORING_DB_NAME}
+      MYSQL_USER: ${MONITORING_DB_USER}
+      MYSQL_PASSWORD: ${MONITORING_DB_PASSWORD}
+      MYSQL_ROOT_PASSWORD: ${MONITORING_DB_ROOT_PASSWORD}
+    ports:
+      - "3311:3306"
+    volumes:
+      - mysql-monitoring-data:/var/lib/mysql
+      - ./db-init/init-monitoring.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "127.0.0.1" ]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 30s
+    networks:
+      - demo_net
+
+  monitoring-service:
+    build:
+      context: ./monitoring-service
+      dockerfile: Dockerfile
+    container_name: monitoring-service
+    restart: unless-stopped
+    ports:
+      - "8085:8080"
+    environment:
+      MONITORING_DB_HOST: mysql-monitoring
+      MONITORING_DB_PORT: 3306
+      MONITORING_DB_NAME: ${MONITORING_DB_NAME}
+      MONITORING_DB_USER: ${MONITORING_DB_USER}
+      MONITORING_DB_PASSWORD: ${MONITORING_DB_PASSWORD}
+      RABBITMQ_HOST: rabbitmq
+      RABBITMQ_PORT: 5672
+      RABBITMQ_USER: ${RABBITMQ_USER}
+      RABBITMQ_PASSWORD: ${RABBITMQ_PASSWORD}
+    depends_on:
+      mysql-monitoring:
+        condition: service_healthy
+      rabbitmq:
         condition: service_healthy
     networks:
       - demo_net
@@ -202,6 +291,7 @@ services:
       - auth-service
       - user-service
       - device-service
+      - monitoring-service
       - frontend
     networks:
       - demo_net
@@ -211,6 +301,8 @@ volumes:
   mysql-user-data:
   mysql-device-data:
   mysql-auth-data:
+  rabbitmq-data:
+  mysql-monitoring-data:
 
 networks:
   demo_net:

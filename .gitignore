@@ -2,4 +2,11 @@
 a2.pdf
 la21.pdf
 a1.pdf
-a3.pdf
+
+# Secrets (use .env.example as template)
+.env
+
+# Build output / IDE
+target/
+node_modules/
+*.iml

@@ -6,6 +6,9 @@
       <list>
         <option value="$PROJECT_DIR$/user-service/pom.xml" />
         <option value="$PROJECT_DIR$/spring-demo-java25/pom.xml" />
+        <option value="$PROJECT_DIR$/device-simulator/pom.xml" />
+        <option value="$PROJECT_DIR$/monitoring-service/pom.xml" />
+        <option value="$PROJECT_DIR$/device-service/pom.xml" />
       </list>
     </option>
   </component>

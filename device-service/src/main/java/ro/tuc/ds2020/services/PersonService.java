@@ -4,15 +4,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ro.tuc.ds2020.controllers.handlers.exceptions.model.ResourceNotFoundException;
+import org.springframework.transaction.annotation.Transactional;
 import ro.tuc.ds2020.dtos.PersonDTO;
 import ro.tuc.ds2020.entities.Device;
 import ro.tuc.ds2020.entities.Person;
+import ro.tuc.ds2020.messaging.DeviceEventPublisher;
 import ro.tuc.ds2020.repositories.DeviceRepository;
 import ro.tuc.ds2020.repositories.PersonRepository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -22,11 +22,15 @@ public class PersonService {
 
     private final PersonRepository personRepository;
     private final DeviceRepository deviceRepository;
+    private final DeviceEventPublisher deviceEventPublisher;
 
     @Autowired
-    public PersonService(PersonRepository personRepository, DeviceRepository deviceRepository) {
+    public PersonService(PersonRepository personRepository,
+                         DeviceRepository deviceRepository,
+                         DeviceEventPublisher deviceEventPublisher) {
         this.personRepository = personRepository;
         this.deviceRepository = deviceRepository;
+        this.deviceEventPublisher = deviceEventPublisher;
     }
 
     public UUID insert(PersonDTO dto) {
@@ -49,27 +53,19 @@ public class PersonService {
         return new PersonDTO(person.getId(), person.getName(), person.getUsername());
     }
 
-    @org.springframework.transaction.annotation.Transactional
+    @Transactional
     public void delete(UUID id) {
-        Optional<Person> personOpt = personRepository.findById(id);
-        if (personOpt.isPresent()) {
-            Person person = personOpt.get();
-            if (person.getDevices() != null) {
-                for (Device device : person.getDevices()) {
-                    device.setPerson(null);
-                }
-                deviceRepository.saveAll(person.getDevices());
-                person.getDevices().clear();
-            }
-            personRepository.delete(person);
-        } else {
-
-            List<Device> devices = deviceRepository.findAllByPersonId(id);
-            for (Device device : devices) {
-                device.setPerson(null);
-            }
-            deviceRepository.saveAll(devices);
+        // Unassign the person's devices first (works even if the person row is missing)
+        List<Device> devices = deviceRepository.findAllByPersonId(id);
+        for (Device device : devices) {
+            device.setPerson(null);
         }
-        LOGGER.debug("Person with id {} was cleaned up in device db", id);
+        deviceRepository.saveAll(devices);
+
+        // Tell monitoring-service that these devices no longer have an owner
+        devices.forEach(deviceEventPublisher::publishUpdated);
+
+        personRepository.findById(id).ifPresent(personRepository::delete);
+        LOGGER.debug("Person with id {} was cleaned up in device db ({} devices unassigned)", id, devices.size());
     }
 }
